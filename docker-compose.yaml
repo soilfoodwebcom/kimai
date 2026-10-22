@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # This builds Kimai directly using your fork's custom code
+  kimai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - ADMINMAIL=webmaster@soilfoodweb.com
+      - ADMINPASS=alexisthebest
+      - DATABASE_URL=mysql://kimaiuser:your_secure_db_password@sqldb/kimai?charset=utf8mb4&serverVersion=8.3.0
+      - TRUSTED_HOSTS=localhost,127.0.0.1
+      - APP_SECRET=your_unique_32_character_secret_string
+    volumes:
+      - kimai-var:/opt/kimai/var
+    depends_on:
+      - sqldb
+
+  # The database container spawned alongside your app
+  sqldb:
+    image: mysql:8.3
+    command: --default-storage-engine innodb
+    restart: unless-stopped
+    environment:
+      - MYSQL_DATABASE=kimai
+      - MYSQL_USER=kimaiuser
+      - MYSQL_PASSWORD=your_secure_db_password
+      - MYSQL_ROOT_PASSWORD=your_secure_root_password
+    volumes:
+      - kimai-mysql:/var/lib/mysql
+
+volumes:
+  kimai-var:
+  kimai-mysql:
